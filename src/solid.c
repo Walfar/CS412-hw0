@@ -124,7 +124,6 @@ int main(int argc, char *argv[]) {
   strncat(command, output_name, OUTPUT_NAME_SIZE);
   system(command);
 
-  free(palette)
   return 0;
 
   /* We use goto to jump to the corresponding error handling code.
@@ -138,12 +137,9 @@ error:
 
 error_px:
   free(img->px);
-  //return ?
 error_img:
-  free(palette)
   free(img);
 error_mem:
-  free(palette)
   printf("Couldn't allocate memory\n");
   return 1;
 }
