@@ -19,8 +19,8 @@ void filter_grayscale(struct image *img, void *weight_arr) {
    *
    * FIX: Initialize both variables to 0.
    */
-  for (unsigned short i; i < img->size_y; i++) {
-    for (unsigned short j; j < img->size_x; j++) {
+  for (unsigned short i = 0; i < img->size_y; i++) {
+    for (unsigned short j = 0; j < img->size_x; j++) {
       double luminosity = 0;
 
       luminosity += weights[0] * image_data[i][j].red;
@@ -53,6 +53,7 @@ void filter_blur(struct image *img, void *r) {
     radius = 0;
   }
 
+  
   struct pixel(*new_data)[img->size_x] =
       malloc(sizeof(struct pixel) * img->size_x * img->size_y);
 
@@ -60,21 +61,36 @@ void filter_blur(struct image *img, void *r) {
     return;
   }
 
-  /* We iterate over all pixels */
-  for (long i = 0; i <= img->size_y; i++) {
-    for (long j = 0; j <= img->size_x; j++) {
+
+  for (long i = 0; i < img->size_y; i++) {
+    for (long j = 0; j < img->size_x; j++) {
 
       unsigned red = 0, green = 0, blue = 0, alpha = 0;
-      /* We iterate over all pixels in the square */
-      for (long y_offset = -radius; y_offset <= radius; y_offset++) {
-        for (long x_offset = -radius; x_offset <= radius; x_offset++) {
 
-          /* BUG!
-           * This bug isn't graded.
-           *
-           * FIX: Limit reads only to valid memory
-           */
-          struct pixel current = image_data[i + y_offset][j + x_offset];
+      long y_min = i - radius;
+      if (y_min < 0) {
+        y_min = 0;
+      }
+
+      long y_max = i + radius;
+      if (y_max >= img->size_y) {
+        y_max = img->size_y - 1;
+      }
+
+      long x_min = j - radius;
+      if (x_min < 0) {
+        x_min = 0;
+      }
+
+      long x_max = j + radius;
+      if (x_max >= img->size_x) {
+        x_max = img->size_x - 1;
+      }
+
+      for (long y_offset = y_min; y_offset <= y_max; y_offset++) {
+        for (long x_offset = x_min; x_offset <= x_max; x_offset++) {
+
+          struct pixel current = image_data[y_offset][x_offset];
 
           red += current.red;
           blue += current.blue;
@@ -83,30 +99,30 @@ void filter_blur(struct image *img, void *r) {
         }
       }
 
+
       int num_pixels = (2 * radius + 1) * (2 * radius + 1);
-      /* Calculate the average */
       red /= num_pixels;
       green /= num_pixels;
       blue /= num_pixels;
       alpha /= num_pixels;
 
-      /* Assign new values */
       new_data[i][j].red = red;
       new_data[i][j].green = green;
       new_data[i][j].blue = blue;
       new_data[i][j].alpha = alpha;
+      
     }
   }
 
   free(img->px);
-  img->px = (struct pixel *)new_data;
+  img->px = (struct pixel *)new_data; 
   return;
 }
 
 /* We allocate and return a pixel */
 struct pixel *get_pixel() {
-  struct pixel px;
-  return &px;
+  struct pixel *px = malloc(sizeof(struct pixel));
+  return px;
 }
 
 /* This filter just negates every color in the image */
@@ -115,11 +131,15 @@ void filter_negative(struct image *img, void *noarg) {
       (struct pixel(*)[img->size_x])img->px;
 
   /* Iterate over all the pixels */
-  for (long i = 0; i <= img->size_y; i++) {
-    for (long j = 0; j <= img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++) {
+    for (long j = 0; j < img->size_x; j++) {
 
       struct pixel current = image_data[i][j];
       struct pixel *neg = get_pixel();
+
+       if (!neg) {
+        exit(1);
+      }
 
       /* The negative is just the maximum minus the current value */
       neg->red = 255 - current.red;
@@ -129,13 +149,17 @@ void filter_negative(struct image *img, void *noarg) {
 
       /* Write it back */
       image_data[i][j] = *neg;
+      free(neg);
+      neg = NULL;
     }
   }
 }
 
+
 /* Set the transparency of the picture to the value (0-255) passed as argument
  */
 void filter_transparency(struct image *img, void *transparency) {
+
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t local_alpha = *((uint8_t *)transparency);

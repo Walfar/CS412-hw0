@@ -14,6 +14,9 @@ struct pixel *allocate_palette() {
 int main(int argc, char *argv[]) {
   struct image *img = NULL;
   struct pixel *palette = allocate_palette();
+  if (!palette) {
+    return 1;
+  }
 
   /*
    * goto statements should be used only in two cases:
@@ -30,7 +33,14 @@ int main(int argc, char *argv[]) {
 
   /* Assign names to arguments for better abstraction */
   char output_name[OUTPUT_NAME_SIZE];
-  strcpy(output_name, argv[1]);
+  strncpy(output_name, argv[1], OUTPUT_NAME_SIZE);
+  for (size_t i = 0; i < strlen(output_name); i++) {
+    if (!isalnum(output_name[i])) {
+      goto error;
+    }
+  } 
+
+
   const char *height_arg = argv[2];
   const char *width_arg = argv[3];
   const char *hex_color_arg = argv[4];
@@ -124,6 +134,10 @@ int main(int argc, char *argv[]) {
   strncat(command, output_name, OUTPUT_NAME_SIZE);
   system(command);
 
+  free(palette);
+  palette = NULL;
+  img = NULL;
+
   return 0;
 
   /* We use goto to jump to the corresponding error handling code.
@@ -140,6 +154,9 @@ error_px:
 error_img:
   free(img);
 error_mem:
+  free(palette);
+  palette = NULL;
+  img = NULL;
   printf("Couldn't allocate memory\n");
   return 1;
 }

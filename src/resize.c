@@ -45,8 +45,8 @@ int main(int argc, char *argv[]) {
   new_img->size_x = new_width;
   new_img->size_y = new_height;
 
-  new_img->px = malloc(n_pixels + sizeof(struct pixel));
-
+  new_img->px = malloc(n_pixels * sizeof(struct pixel));
+  
   if (!new_img->px) {
     goto error_memory_img;
   }
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         unsigned nearest_y = y / factor;
 
         /* Store the pixel */
-        image_data_new[y][x] = image_data[nearest_y][nearest_x];
+        image_data_new[x][y] = image_data[nearest_x][nearest_y];
       }
     }
   }

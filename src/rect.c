@@ -85,5 +85,6 @@ int main(int argc, char *argv[]) {
   store_png(output, img, NULL, 0);
   free(img->px);
   free(img);
+  img = NULL;
   return 0;
 }
