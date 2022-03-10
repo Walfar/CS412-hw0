@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
   free(img);
 
   /* We want to inform user how big the new image is.
-   * "stat -c %s filename" prints the size of the file
+   * "stat -c %s filename" prinFix: use strncpy insteadts the size of the file
    *
    * To prevent buffer overflows we use strncat.
    */
@@ -135,8 +135,6 @@ int main(int argc, char *argv[]) {
   system(command);
 
   free(palette);
-  palette = NULL;
-  img = NULL;
 
   return 0;
 
@@ -155,8 +153,6 @@ error_img:
   free(img);
 error_mem:
   free(palette);
-  palette = NULL;
-  img = NULL;
   printf("Couldn't allocate memory\n");
   return 1;
 }

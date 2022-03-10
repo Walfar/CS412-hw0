@@ -58,15 +58,15 @@ int main(int argc, char *argv[]) {
 
     /* Iterate over all pixels in the new image and fill them with the nearest
      * neighbor in the old one */
-    for (unsigned y = 0; y < new_height; y++) {
-      for (unsigned x = 0; x < new_width; x++) {
+    for (unsigned y = 0; y < new_img->size_y; y++) {
+      for (unsigned x = 0; x < new_img->size_x; x++) {
 
         /* Calculate the location of the pixel in the old image */
         unsigned nearest_x = x / factor;
         unsigned nearest_y = y / factor;
 
         /* Store the pixel */
-        image_data_new[x][y] = image_data[nearest_x][nearest_y];
+        image_data_new[y][x] = image_data[nearest_y][nearest_x];
       }
     }
   }
@@ -84,10 +84,10 @@ error_usage:
   return 1;
 
 error_memory_img:
+  free(new_img->px);
   free(new_img);
 error_memory:
   free(img->px);
-
 error:
   free(img);
   printf("Memory error!");

@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
 
   img->px = malloc(sizeof(struct pixel) * n_pixels);
   if (!img->px) {
-    free(img);
     goto error_img;
   }
 
@@ -112,14 +111,12 @@ int main(int argc, char *argv[]) {
         /* This iterates over a square and fills it with the correct color */
         for (int x = 0; x < square_width; x++) {
           for (int y = 0; y < square_width; y++) {
-            image_data[square_top_left_y + y][square_top_left_x + x].red =
-                palette[color].red;
-            image_data[square_top_left_y + y][square_top_left_x + x].green =
-                palette[color].green;
-            image_data[square_top_left_y + y][square_top_left_x + x].blue =
-                palette[color].blue;
-            image_data[square_top_left_y + y][square_top_left_x + x].alpha =
-                0xff;
+            if(square_top_left_y + y < height && square_top_left_x + x < width){
+              image_data[square_top_left_y + y][square_top_left_x + x].red = palette[color].red;
+              image_data[square_top_left_y + y][square_top_left_x + x].green = palette[color].green;
+              image_data[square_top_left_y + y][square_top_left_x + x].blue = palette[color].blue;
+              image_data[square_top_left_y + y][square_top_left_x + x].alpha = 0xff;
+            }
           }
         }
       }

@@ -1,45 +1,83 @@
-# BUGS IN SOLID.c
+# BUG-1
+## Category
+Memory allocation unchecked
 
-# BUG 1 -
-line 10: Memory allocation unchecked
+## Description
+We don't check that the malloc was succesfull after calling "struct pixel *palette = allocate_palette()", which could result in a segfault if running on a computer with low memory.
 
-We don't check that the malloc was succesfull, which could result in a segfault.
-Fix: add a check, return if malloc failed
+## Affected Lines in the original program
+In `solid.c:16`
 
+## Expected vs Observed
+We expect that the programm ends smoothly, even if there isn't enough memory. But, in this case, it results in a segfault.
+
+## Steps to Reproduce
+Run "./solid output 1 1 ffff00" on a computer with low memory
+
+## Suggested Fix Description
+After calling "struct pixel *palette = allocate_palette()" add a check that returns if the pointer is NULL, i.e no memory was allocated.
+"if (!palette) {
+    return 1;
+}"
 
 # BUG 2 -
-line 33: Stack buffer overflow
+## Category
+Stack Buffer Overflow
 
+## Description
 We don't check the size of the array being copied. An adversary could overflow the buffer by giving more than OUTPUT_NAME_SIZE chars in args.
-Fix: use strncpy instead
+
+## Affected Lines in the original program
+In `solid.c:35`
+
+## Expected vs Observed
+We expect that a user is restricted to the memory space he has access to when giving his inputs. The user, when putting more than 500 characters (OUTPUT_NAME_SIZE) can overflow the buffer and write code to unrestricted memory.
+
+## Steps to Reproduce
+./solid a(500 times)maliciouscode 1 1 ffff00
+
+## Suggested Fix Description
+Use strncpy(output_name, argv[1], OUTPUT_NAME_SIZE) instead of strcpy
 
 # BUG 3 -
-line 125: Command injection
+## Category
+Command injection
 
+## Description
 An adversary can inject code in the command that will be called by the system.
-Fix: Return an error if the output name contains non alphanumeric characters (line 37)
 
+## Affected Lines in the original program
+In `solid.c:135`
 
-# BUG 5 -
-line 127: Memory leak
+## Expected vs Observed
+We expect all user's inputs are correctly sanitized to avoid code injection.
 
-Must free palette before returning
-Fix: add free(palette)
+## Steps to Reproduce
+./solid "&&maliciouscommand 1 1 ffff00
 
-# BUG 6 -
-line 144: Memory leak
+## Suggested Fix Description
+Sanitize by accepting only alphanumerics chars from the user's input. Add the following after receiving the inputs:
+for (size_t i = 0; i < strlen(output_name); i++) {
+    if (!isalnum(output_name[i])) {
+      goto error;
+    }
+} 
 
-Must free palette in case of error return.
-Fix: add free(palette)
+# BUG 4 -
+## Category
+Memory Leak
 
-# BUG 7 -
-line 138: pointer error
+## Description
+Memory allocated for palette is not freed.
 
-Pointers for palette and img must be set to NULL after freed
-Fix: ptr = NULL
+## Affected Lines in the original program
+In `solid.c:127`, `solid.c:144`
 
-# BUG 8 -
-line 158: pointer error
+## Expected vs Observed
+We expect all memory allocated is freed before returning. 
 
-Pointers for palette and img must be set to NULL after freed
-Fix: ptr = NULL
+## Steps to Reproduce
+./solid output 1 1 ffff00
+
+## Suggested Fix Description
+Add free(palette) before returning at the end of the programm (line 137), and when a error_mem occurs (line 155).

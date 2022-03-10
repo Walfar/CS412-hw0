@@ -13,7 +13,11 @@ void filter_grayscale(struct image *img, void *weight_arr) {
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   double *weights = (double *)weight_arr;
-
+  /* BUG!
+   * This bug isn't graded.
+   *
+   * FIX: Initialize both variables to 0.
+   */
   /* BUG!
    * This bug isn't graded.
    *
@@ -60,7 +64,6 @@ void filter_blur(struct image *img, void *r) {
   if (!new_data) {
     return;
   }
-
 
   for (long i = 0; i < img->size_y; i++) {
     for (long j = 0; j < img->size_x; j++) {
@@ -150,7 +153,6 @@ void filter_negative(struct image *img, void *noarg) {
       /* Write it back */
       image_data[i][j] = *neg;
       free(neg);
-      neg = NULL;
     }
   }
 }
@@ -203,7 +205,28 @@ void filter_edge_detect(struct image *img, void *threshold_arg) {
   /* Iterate over all pixels */
   for (long i = 0; i < img->size_y; i++) {
     for (long j = 0; j < img->size_x; j++) {
-      /* TODO: Implement */
+
+      //edge cases for convolution
+      uint max_x = j+1;
+      uint max_y = i+1;
+      uint min_x = j-1;
+      uint min_y = i-1;
+      if (j == img->size_x) {
+        max_x = img->size_x;
+      }
+      if (i == img->size_y) {
+        max_y = img->size_y;
+      }
+      if (j == 0) {
+        max_x = 0;
+      }
+      if (i == 0) {
+        min_y = 0;
+      }
+
+
+     // Gx_red = -img_data[min_y][min_x].red + img_data[max_y][min_x].red -2*img_data[min_y][j].red + 2*img_data[max_y][j].red - 1*img_data[min_y][max_x].red + img_data[max_y][max_x].red;
+
     }
   }
 }
@@ -246,7 +269,7 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
 
   /* If the filter takes an argument, copy it */
   if (argv[4]) {
-    strcpy(arg, argv[4]);
+    strncpy(arg, argv[4], ARG_SIZE);
   }
 
   /* Error when loading a png image */
@@ -278,7 +301,7 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
     long tmp_alpha = strtol(arg, &end_ptr, 16);
 
     if (tmp_alpha < 0 || tmp_alpha > 255) {
-      goto error_usage;
+      goto error_ustrcmpsage;
     } else {
       alpha = tmp_alpha;
     }
